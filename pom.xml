@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.yee.bigdata</groupId>
+    <artifactId>recipes</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>recipes </name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <scala.libray.version>2.11.8</scala.libray.version>
+        <spark.version>2.1.0</spark.version>
+        <hadoop.version>2.6.0</hadoop.version>
+        <hive.version>1.1.0</hive.version>
+        <mysql.connector.version>5.1.47</mysql.connector.version>
+        <log4j.version>2.11.1</log4j.version>
+        <main.class>com.intest.view.CarDriveOnlineTime</main.class>
+        <os.detected.classifier>windows</os.detected.classifier>
+    </properties>
+
+    <!-- Maven profiles allow you to support both Scala 2.10, 2.11 and Scala 2.12 with
+ the right dependencies for modules specified for each version separately -->
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <!-- 设置默认激活这个配置 -->
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <scala.version>2.11.8</scala.version>
+                <scala.compat.version>2.11</scala.compat.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.compat.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.compat.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_${scala.compat.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-jdbc</artifactId>
+            <version>${hive.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-exec</artifactId>
+            <version>${hive.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.connector.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+
+        <!-- To define the plugin version in your parent POM -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-toolchains-plugin</artifactId>
+                    <version>1.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>toolchain</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <toolchains>
+                            <jdk>
+                                <version>1.8</version>
+                                <vendor>sun</vendor>
+                            </jdk>
+                        </toolchains>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <charset>UTF-8</charset>
+                        <locale>en_US</locale>
+                        <header>${project.name} ${project.version}</header>
+                        <footer>https://github.com/kaitoy/pcap4j</footer>
+                        <windowtitle>${project.name} ${project.version}</windowtitle>
+                        <bottom>Copyright &amp;#169; 2011&amp;#x2013;{currentYear} Pcap4J.org. All rights reserved.</bottom>
+                        <show>protected</show>
+                        <source>8</source>
+                        <doclint>all,-reference</doclint>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <nonFilteredFileExtensions>
+                            <!-- 过滤后缀不需要转码的文件,后缀名.png .tiff -->
+                            <nonFilteredFileExtension>*.png</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>*.tiff</nonFilteredFileExtension>
+                        </nonFilteredFileExtensions>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.0.0-M1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <mainClass>${main.class}</mainClass>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+
+                <!-- 执行测试用例默认插件-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M3</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <argLine>-Dfile.encoding=UTF-8</argLine>
+                        <parallel>methods</parallel>
+                        <threadCount>10</threadCount>
+                        <skipTests>false</skipTests>
+                        <!-- 当有1个测试用例执行失败或发生异常时,跳过后续的其他测试用例 -->
+                        <skipAfterFailureCount>1</skipAfterFailureCount>
+
+                        <!--配置是否跳过测试用例执行-->
+                        <includes>
+                            <include>*/*Test.java</include>
+                        </includes>
+                        <!--excludes>
+                            <exclude>*/App2Test.java</exclude>
+                        </excludes-->
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <!-- 明确指定用的是JUnit4.7及以上版本 -->
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit4</artifactId>
+                            <version>3.0.0-M3</version>
+                        </dependency>
+                    </dependencies>
+
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+
+                <!-- Formats your code using google-java-format which follows Google's code styleguide. -->
+                <plugin>
+                    <groupId>com.coveo</groupId>
+                    <artifactId>fmt-maven-plugin</artifactId>
+                    <version>2.8</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>format</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+
+
+        <plugins>
+
+            <!-- the Maven Scala plugin will compile Scala source files -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- allows the route to be run via 'mvn exec:java' -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                </configuration>
+            </plugin>
+
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!--includes>
+                    <include>jdbc.properties</include>
+                    <include>algs_config.properties</include>
+                    <include>hive-site.xml</include>
+                </includes-->
+                <excludes>
+                    <exclude>hive-site.xml</exclude>
+                </excludes>
+            </resource>
+
+        </resources>
+
+    </build>
+
+
+
+</project>
