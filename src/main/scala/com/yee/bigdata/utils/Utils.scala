@@ -2,8 +2,10 @@ package com.yee.bigdata.utils
 
 import java.io._
 import java.lang.management.ManagementFactory
+import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
-import java.util.UUID
+import java.util.{Base64, Properties, UUID}
+import java.util.concurrent.locks.{Lock, ReadWriteLock}
 import java.util.zip.GZIPInputStream
 
 import com.google.common.io.{ByteStreams, Files => GFiles}
@@ -12,6 +14,8 @@ import scala.util.Try
 import scala.util.control.{ControlThrowable, NonFatal}
 import org.apache.logging.log4j.LogManager
 
+import scala.collection._
+import scala.collection.mutable
 import scala.io.Source
 
 object Utils {
@@ -622,6 +626,108 @@ object Utils {
     val klass = Class.forName(className, true, JUtils.getContextOrAppClassLoader()).asInstanceOf[Class[T]]
     val constructor = klass.getConstructor(args.map(_.getClass): _*)
     constructor.newInstance(args: _*)
+  }
+
+  /**
+    * Parse a comma separated string into a sequence of strings.
+    * Whitespace surrounding the comma will be removed.
+    */
+  def parseCsvList(csvList: String): Seq[String] = {
+    if(csvList == null || csvList.isEmpty)
+      Seq.empty[String]
+    else {
+      csvList.split("\\s*,\\s*").filter(v => !v.equals(""))
+    }
+  }
+
+  /**
+    * This method gets comma separated values which contains key,value pairs and returns a map of
+    * key value pairs. the format of allCSVal is key1:val1, key2:val2 ....
+    * Also supports strings with multiple ":" such as IpV6 addresses, taking the last occurrence
+    * of the ":" in the pair as the split, eg a:b:c:val1, d:e:f:val2 => a:b:c -> val1, d:e:f -> val2
+    */
+  def parseCsvMap(str: String): Map[String, String] = {
+    val map = new mutable.HashMap[String, String]
+    if ("".equals(str))
+      return map
+    val keyVals = str.split("\\s*,\\s*").map(s => {
+      val lio = s.lastIndexOf(":")
+      (s.substring(0,lio).trim, s.substring(lio + 1).trim)
+    })
+    keyVals.toMap
+  }
+
+  /**
+    * Create a circular (looping) iterator over a collection.
+    * @param coll An iterable over the underlying collection.
+    * @return A circular iterator over the collection.
+    */
+  def circularIterator[T](coll: Iterable[T]):Iterator[T] = {
+    for (_ <- Iterator.continually(1); t <- coll) yield t
+  }
+
+  /**
+    * Execute the given function inside the lock
+    */
+  def inLock[T](lock: Lock)(fun: => T): T = {
+    lock.lock()
+    try {
+      fun
+    } finally {
+      lock.unlock()
+    }
+  }
+
+  def inReadLock[T](lock: ReadWriteLock)(fun: => T): T = inLock[T](lock.readLock)(fun)
+
+  def inWriteLock[T](lock: ReadWriteLock)(fun: => T): T = inLock[T](lock.writeLock)(fun)
+
+  /**
+    * Returns a list of duplicated items
+    */
+  def duplicates[T](s: Traversable[T]): Iterable[T] = {
+    s.groupBy(identity)
+      .map { case (k, l) => (k, l.size)}
+      .filter { case (_, l) => l > 1 }
+      .keys
+  }
+
+  def generateUuidAsBase64(): String = {
+    val uuid = UUID.randomUUID()
+    Base64.getUrlEncoder.withoutPadding.encodeToString(getBytesFromUuid(uuid))
+  }
+
+  def getBytesFromUuid(uuid: UUID): Array[Byte] = {
+    // Extract bytes for uuid which is 128 bits (or 16 bytes) long.
+    val uuidBytes = ByteBuffer.wrap(new Array[Byte](16))
+    uuidBytes.putLong(uuid.getMostSignificantBits)
+    uuidBytes.putLong(uuid.getLeastSignificantBits)
+    uuidBytes.array
+  }
+
+  def propsWith(props: (String, String)*): Properties = {
+    val properties = new Properties()
+    props.foreach { case (k, v) => properties.put(k, v) }
+    properties
+  }
+
+  /**
+    * Atomic `getOrElseUpdate` for concurrent maps. This is optimized for the case where
+    * keys often exist in the map, avoiding the need to create a new value. `createValue`
+    * may be invoked more than once if multiple threads attempt to insert a key at the same
+    * time, but the same inserted value will be returned to all threads.
+    *
+    * In Scala 2.12, `ConcurrentMap.getOrElse` has the same behaviour as this method, but that
+    * is not the case in Scala 2.11. We can remove this method once we drop support for Scala
+    * 2.11.
+    */
+  def atomicGetOrUpdate[K, V](map: concurrent.Map[K, V], key: K, createValue: => V): V = {
+    map.get(key) match {
+      case Some(value) => value
+      case None =>
+        val value = createValue
+        map.putIfAbsent(key, value).getOrElse(value)
+    }
   }
 
 }
