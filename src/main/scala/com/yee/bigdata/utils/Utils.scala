@@ -9,6 +9,7 @@ import java.util.concurrent.locks.{Lock, ReadWriteLock}
 import java.util.zip.GZIPInputStream
 
 import com.google.common.io.{ByteStreams, Files => GFiles}
+import com.google.common.collect.{Ordering => GuavaOrdering}
 
 import scala.util.Try
 import scala.util.control.{ControlThrowable, NonFatal}
@@ -17,6 +18,7 @@ import org.apache.logging.log4j.LogManager
 import scala.collection._
 import scala.collection.mutable
 import scala.io.Source
+import scala.collection.JavaConverters._
 
 object Utils {
   private val LOG = LogManager.getLogger(Utils.getClass)
@@ -728,6 +730,17 @@ object Utils {
         val value = createValue
         map.putIfAbsent(key, value).getOrElse(value)
     }
+  }
+
+  /**
+    * Returns the first K elements from the input as defined by the specified implicit Ordering[T]
+    * and maintains the ordering.
+    */
+  def takeOrdered[T](input: Iterator[T], num: Int)(implicit ord: Ordering[T]): Iterator[T] = {
+    val ordering = new GuavaOrdering[T] {
+      override def compare(l: T, r: T): Int = ord.compare(l, r)
+    }
+    ordering.leastOf(input.asJava, num).iterator.asScala
   }
 
 }
