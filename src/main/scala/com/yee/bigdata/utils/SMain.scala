@@ -1,13 +1,31 @@
 package com.yee.bigdata.utils
 
+import org.apache.spark.launcher.Main
 import java.io.{FileInputStream, FileOutputStream}
+
+import org.apache.spark.sql.SparkSession
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.handler.ResourceHandler
 
 import scala.io.Source
 
-object Main {
+object SMain {
   case class Button(id:Int,name:String)
 
+  def startUp(): Unit ={
+    val server = new  Server(8080)
+    val handler = new ResourceHandler()
+    handler.setResourceBase("E:\\资料\\open-sources\\apache-hive-3.1.1-src\\apache-hive-3.1.1-src")
+    handler.setDirectoriesListed(true)
+    server.setHandler(handler)
+    server.start()
+  }
+
+
   def main(args: Array[String]): Unit = {
+    startUp()
+    // val sparkSession = SparkSession.builder().appName("SMain").master("local[2]").getOrCreate()
+
     //println(Utils.createTempDir())
     // println(Utils.getProcessName())
     /*
@@ -30,8 +48,8 @@ object Main {
     // val out = new FileOutputStream("./logs/b.out")
     // Utils.copyStream(source,out)
 
-    val j = Utils.createObject[Funny]("com.yee.bigdata.utils.Funny",Button(1,"topButton"),"j-1")
-    j.doSome()
+    // val j = Utils.createObject[Funny]("com.yee.bigdata.utils.Funny",Button(1,"topButton"),"j-1")
+    // j.doSome()
   }
 
 }

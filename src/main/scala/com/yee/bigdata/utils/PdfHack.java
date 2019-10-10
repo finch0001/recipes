@@ -1,6 +1,8 @@
 package com.yee.bigdata.utils;
 
 import java.io.FileOutputStream;
+import java.util.Iterator;
+import java.util.Set;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.PageSize;
@@ -24,6 +26,30 @@ public class PdfHack {
     private static void help() {
         System.out.println("Usage: PdfHack command input_pdf");
         System.out.println("command is one of 'crop', 'twoup', 'booklet'");
+    }
+
+
+    private static void splitPages(String input) throws Exception{
+        String output = input.replace(".pdf", "-crop.pdf");
+        PdfReader reader = new PdfReader(input);
+        final int n = reader.getNumberOfPages();
+
+        int startPage = 10;
+        int endPage  = 20;
+
+        PdfDictionary pdfDictionaryFirst = reader.getPageN(10);
+        for(int i = startPage + 1; i < endPage; i++){
+            PdfDictionary pdfDictionary = reader.getPageN(i);
+            // Set<PdfName> names = pdfDictionary.getKeys();
+            // Document doc = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+            pdfDictionaryFirst.merge(pdfDictionary);
+        }
+
+
+
+
+
+        // PdfWriter.getInstance(pd,new FileOutputStream("E:\\\\tmp\\\\data\\\\d.pdf"));
     }
 
     private static void crop(String input) throws Exception {
@@ -99,6 +125,7 @@ public class PdfHack {
         System.out.println("Input page size: " + pageSize);
         Document doc = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
         PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(output));
+
         doc.open();
         splitLine(doc, writer);
         int[] pages = new int[(n + 3) / 4 * 4];
@@ -128,7 +155,8 @@ public class PdfHack {
         doc.close();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
+        /*
         if (args.length >= 2) {
             String cmd = args[0];
             String input = args[1];
@@ -149,6 +177,9 @@ public class PdfHack {
         } else {
             help();
         }
-    }
+        */
+        crop("E:\\tmp\\java.pdf");
 
+
+    }
 }

@@ -6,7 +6,7 @@ import java.nio.charset.Charset
 
 import com.itextpdf.text._
 import com.itextpdf.text.pdf._
-import com.yee.bigdata.utils.Main.Button
+import com.yee.bigdata.utils.SMain.Button
 import com.google.common.collect.MapMaker
 import com.itextpdf.text.html.simpleparser.HTMLWorker
 import com.itextpdf.tool.xml.XMLWorkerHelper
@@ -122,6 +122,6 @@ class Funny(button:Button, name:String) extends AnyRef{
     // val cMap = new MapMaker().weakKeys().makeMap[String,Long]()
     // cMap.put("",1L)
     // pdf("C:\\Users\\intest\\Desktop\\linuxcon2010_wheeler.pdf")
-    image()
+    // image()
   }
 }
